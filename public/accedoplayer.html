@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Smoke test - Live</title>
+  <link rel="stylesheet" type="text/css" href="//prestg.sonyliv.com/styles/main.css">
+  <link href="//players.brightcove.net/videojs-ima3/2/videojs.ima3.min.css" rel="stylesheet"/>
+  <script
+  src="https://code.jquery.com/jquery-3.2.1.min.js"
+  integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
+  crossorigin="anonymous"></script>
+  <style>
+    .video-js {
+      height: 360px;
+      width: 640px;
+    }
+  </style>
+</head>
+<body>
+
+  <video id="vjs_video_3"
+    data-video-id="5031925037001"
+    data-account="4338955589001"
+    data-player="S1wU6FK-Z"
+    data-embed="default"
+    class="video-js bc-player"
+    controls></video>
+    <!-- <script src="//players.brightcove.net/4338955589001/S1wU6FK-Z_default/index.js"></script>
+    <script src="//players.brightcove.net/videojs-ima3/2/videojs.ima3.min.js"></script>
+    <script src="http://smartplugin.youbora.com/v5/javascript/videojs5/5.4.3/sp.min.js"></script> -->
+    <p><textarea id="msgLog" rows="30" cols="65"></textarea></p>
+
+  <script>
+    var initPlayer = function() {
+      var player = bc("vjs_video_3"),
+          eventsToListen = [
+             /* Ad events */
+            'readyforpreroll',
+            'contentplayback',
+            'adstart', // The player has entered linear ad playback mode.
+            'adtimeout', // A timeout managed by the plugin has expired and regular video content has begun to play.
+            'adend', // The player has returned from linear ad playback mode
+            'ads-request', // Ad data is requested
+            'ads-load', //  Ad data is available following an ad request
+            'ads-pod-started', // A linear ad pod has started
+            'ads-pod-ended', // A linear ad pod has completed
+            'ads-allpods-completed', // All linear ads are completed
+            'ads-ad-started', // Ad starts playing
+            'ads-ad-ended', // Ad completes playing
+            'ads-first-quartile', // Ad playhead crosses the first quartile
+            'ads-midpoint', // Ad playhead crosses the midpoint
+            'ads-third-quartile', // Ad playhead crosses the third quartile
+            'ads-pause', // Ad is paused
+            'ads-play', //  Ad is resumed
+            'ads-mute', //  Ad volume has been muted
+            'ads-click', // Ad is clicked
+
+
+            /* media/player events */
+            'firstplay',
+            'durationchange',
+            'ended',
+            'error',
+            'canplay',
+            'fullscreenchange',
+            'loadedalldata',
+            'loadeddata',
+            'loadedmetadata',
+            'loadstart',
+            'pause',
+            'play',
+            'playing',
+            'seek',
+            'seeking',
+            'seeked',
+            'resume',
+            'timeupdate',
+            'volumechange'
+          ];
+
+
+       if(getParameterByName('ads')){
+        player.ima3(
+           {
+               "adTechOrder": ['html5', 'flash'],
+               "debug": true,
+               "timeout": 5e3,
+               "requestMode": "onload",
+               "serverUrl": "https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/124319096/external/single_ad_samples&ciu_szs=300x250&impl=s&gdfp_req=1&env=vp&output=vast&unviewed_position_start=1&cust_params=deployment%3Ddevsite%26sample_ct%3Dlinear&correlator=[timestamp]"
+           }
+         );
+       }
+
+       player.autoplay(true);
+
+
+        player.youbora({
+               accountCode: 'nicedev',
+               media: {
+                  isLive: true
+               }
+        });
+
+
+       // Ad ingnore handlers
+       // http://developer.nicepeopleatwork.com/plugins/general/ignoring-ads/
+       player.on('adstart', function(e) {
+            player.youboraplugin.ignoringAdHandler();
+        });
+
+        player.on('adend', function(e) {
+           player.youboraplugin.ignoredAdHandler();
+        });
+
+
+       player.on(eventsToListen, logEvent);
+
+       function logEvent(evt){
+          var textarea = document.getElementById("msgLog"),
+              message = evt.type,
+              currentdate = new Date(),
+              time = currentdate.getHours() + ":" + currentdate.getMinutes() + ":" + currentdate.getSeconds() + "."  +currentdate.getMilliseconds();
+              textarea.value = '>>>> ' + time + ' Event: ' + message + '\n' + textarea.value;
+       }
+
+       function getParameterByName(name) {
+          var url = window.location.href;
+          name = name.replace(/[\[\]]/g, "\\$&");
+          var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
+              results = regex.exec(url);
+          if (!results) return null;
+          if (!results[2]) return '';
+          return decodeURIComponent(results[2].replace(/\+/g, " "));
+      }
+    }
+
+    var bcScript = '//players.brightcove.net/4338955589001/S1wU6FK-Z_default/index.js';
+    var youboraSmartPlugin = '//smartplugin.youbora.com/v5/javascript/videojs5/5.4.3/sp.min.js';
+    var imaPlugin = '//players.brightcove.net/videojs-ima3/2.19.4/videojs.ima3.min.js';
+
+    $(document).ready(function() {
+      (function self(a, cb, i) {
+          i = i || 0;
+          cb = cb || function () {
+              };
+          if (i == a.length) return cb();
+          $.getScript(a[i++], self.bind(0, a, cb, i));
+      })([bcScript, imaPlugin, youboraSmartPlugin], function () {
+          // $log.debug('BC,youbora script loading done');
+          initPlayer();
+      });
+    });
+    // initPlayer();
+
+  </script>
+
+
+</body>
+</html>
